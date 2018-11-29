@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">WordUnScramble</string>
+    <string name="enter_scrambled_word">Enter scrambled word</string>
+    <string name="unscramble">Unscramble Word</string>
 </resources>
