@@ -5,36 +5,50 @@ import android.content.res.AssetManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Map;
 
 // Our shuffle will be the implementation of Fisher-YAtes-Shuffle
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
+    private static final String TAG = MainActivity.class.getSimpleName();
     private EditText scrambled_word_edit_text;
     private Button result_button;
-    private RecyclerView recyclerView;
+    private TextView result_text_view;
     AssetManager assetManager;
     private BufferedReader reader;
+    private SecureRandom random;
+    private Map<String, Integer> dictionaryMap;
+    private int wordCount;
+    private StringBuilder result;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        SecureRandom random = new SecureRandom();
+        random = new SecureRandom();
         assetManager = this.getAssets();
+        dictionaryMap = new HashMap<>();
         scrambled_word_edit_text = findViewById(R.id.scrambled_word_edit_text);
 
+        result_text_view = findViewById(R.id.result_text_view);
         result_button = findViewById(R.id.unscramble_word_button);
         result_button.setOnClickListener(this);
+        result = new StringBuilder();
+
+        loadDictionary();
 
 
     }
@@ -49,8 +63,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void loadDictionary(){
 
-        String text = "";
-
         try {
             /*InputStream inputStream = assetManager.open("dictionary.txt");
             int size = inputStream.available();
@@ -61,11 +73,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             text = new String(buffer);
             // TextView.setText(text);*/
             reader = new BufferedReader(new InputStreamReader(assetManager.open("dictionary.txt")));
-            StringBuilder stringBuilder = new StringBuilder();
+//            StringBuilder stringBuilder = new StringBuilder();
             String newLine = reader.readLine();
             while (newLine != null){
-                stringBuilder.append(newLine);
+//                stringBuilder.append(newLine);
+                wordCount = 1;
+                dictionaryMap.put(newLine, wordCount);
                 newLine = reader.readLine();
+                wordCount++;
             }
 
             // return stringBuilder.toString();
@@ -77,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     reader.close();
                 } catch (IOException e){
                     //TODO: Log the Error
+                    Log.d(TAG, "Error in closing the InputReaderStream");
                 }
             }
         }
@@ -91,11 +107,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             } else {
                 String scrambled_word = scrambled_word_edit_text.getText().toString();
                 int scrambled_word_length = scrambled_word.length();
-                calculateFactorial(scrambled_word_length);
+                for (int i = 0; i < calculateFactorial(scrambled_word_length); i++){
+                    String solved_word = shuffle(random, scrambled_word);
+                    if (dictionaryMap.containsKey(solved_word.toUpperCase())){
+                        result.append(solved_word + "\n");
+                    }
+                }
+
+                result_text_view.setText(result);
             }
 
 
         }
+    }
+
+    private static String shuffle(SecureRandom secureRandom, String inputString){
+
+        // Convert your string into simple char array
+        char a[] = inputString.toCharArray();
+
+        // Scramble the letters using the standard Fisher-Yates shuffle
+        for (int i = 0; i < a.length; i++){
+            int j = secureRandom.nextInt(a.length);
+
+            // swap letters
+            char temp = a[i];
+            a[i] = a[j];
+            a[j] = temp;
+        }
+
+        return new String(a);
     }
 
 }

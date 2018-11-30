@@ -34,14 +34,15 @@
         app:layout_constraintEnd_toEndOf="@+id/textInputLayout"
         app:layout_constraintTop_toBottomOf="@+id/textInputLayout" />
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/result_recycler_view"
+    <TextView
+        android:id="@+id/result_text_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
+        android:gravity="center"
+        tools:text="@tools:sample/lorem"
         app:layout_constraintEnd_toEndOf="@+id/unscramble_word_button"
         app:layout_constraintStart_toStartOf="@+id/unscramble_word_button"
-        app:layout_constraintTop_toBottomOf="@+id/unscramble_word_button"
-        tools:listitem="@layout/word_item" />
+        app:layout_constraintTop_toBottomOf="@+id/unscramble_word_button" />
 
 </android.support.constraint.ConstraintLayout>
