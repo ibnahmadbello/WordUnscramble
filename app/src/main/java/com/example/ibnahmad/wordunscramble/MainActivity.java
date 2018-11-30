@@ -23,6 +23,7 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    public static final int NO_COUNT = 0;
     private EditText scrambled_word_edit_text;
     private Button result_button;
     private TextView result_text_view;
@@ -30,7 +31,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private BufferedReader reader;
     private SecureRandom random;
     private Map<String, Integer> dictionaryMap;
-    private int wordCount;
     private StringBuilder result;
 
     @Override
@@ -73,14 +73,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             text = new String(buffer);
             // TextView.setText(text);*/
             reader = new BufferedReader(new InputStreamReader(assetManager.open("dictionary.txt")));
-//            StringBuilder stringBuilder = new StringBuilder();
             String newLine = reader.readLine();
             while (newLine != null){
-//                stringBuilder.append(newLine);
-                wordCount = 1;
-                dictionaryMap.put(newLine, wordCount);
+                dictionaryMap.put(newLine, NO_COUNT);
                 newLine = reader.readLine();
-                wordCount++;
             }
 
             // return stringBuilder.toString();
@@ -105,16 +101,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (scrambled_word_edit_text.length() == 0){
                 scrambled_word_edit_text.setError("Please enter a scrambled word.");
             } else {
+                result_text_view.setText(null);
                 String scrambled_word = scrambled_word_edit_text.getText().toString();
                 int scrambled_word_length = scrambled_word.length();
                 for (int i = 0; i < calculateFactorial(scrambled_word_length); i++){
                     String solved_word = shuffle(random, scrambled_word);
                     if (dictionaryMap.containsKey(solved_word.toUpperCase())){
-                        result.append(solved_word + "\n");
+                        result.append(solved_word).append("\n");
                     }
                 }
 
                 result_text_view.setText(result);
+                result = new StringBuilder();
             }
 
 
