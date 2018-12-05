@@ -125,7 +125,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         char a[] = inputString.toCharArray();
 
         // Scramble the letters using the standard Fisher-Yates shuffle
-        for (int i = 0; i < a.length; i++){
+//        for (int i = 0; i < a.length; i++){
+        for (int i = a.length; i > 0; i--) { // Was done using reverse mechanism to improve performance
+
             int j = secureRandom.nextInt(a.length);
 
             // swap letters
