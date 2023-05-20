@@ -1,5 +1,7 @@
 package com.example.ibnahmad.wordunscramble;
 
+import static com.example.ibnahmad.wordunscramble.WordGenerator.generateWords;
+
 import android.content.res.AssetManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -24,95 +26,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private EditText scrambled_word_edit_text;
     private Button result_button;
     private TextView result_text_view;
-    static AssetManager assetManager;
-    private static Set<String> englishWords;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        assetManager = this.getAssets();
         scrambled_word_edit_text = findViewById(R.id.scrambled_word_edit_text);
 
         result_text_view = findViewById(R.id.result_text_view);
         result_button = findViewById(R.id.unscramble_word_button);
         result_button.setOnClickListener(this);
-//        loadDictionary();
-    }
-
-    private static Set<String> loadDictionary() {
-        Set<String> words = new HashSet<>();
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(new InputStreamReader(assetManager.open("dictionary.txt")));
-            String newLine = reader.readLine();
-            while (newLine != null) {
-                words.add(newLine.toLowerCase());
-            }
-
-            // return stringBuilder.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    //TODO: Log the Error
-                    Log.d(TAG, "Error in closing the InputReaderStream");
-                }
-            }
-        }
-        return words;
-    }
-
-    public static ArrayList<String> generateWords(String word) {
-        ArrayList<String> results = new ArrayList<>();
-        for (int i = 1; i <= word.length(); i++) {
-            List<String> partialResults = generatePartialWords(word, i);
-            results.addAll(partialResults);
-        }
-        return results;
-    }
-
-    private static ArrayList<String> generatePartialWords(String word, int length) {
-        ArrayList<String> partialResults = new ArrayList<>();
-        ArrayList<Character> availableChars = new ArrayList<>();
-        for (char c : word.toCharArray()) {
-            availableChars.add(c);
-        }
-        generateWordsHelper("", availableChars, length, partialResults);
-        return partialResults;
-    }
-
-    private static void generateWordsHelper(String currentWord, List<Character> availableChars, int length, List<String> results) {
-        if (currentWord.length() == length) {
-            if (isEnglishWord(currentWord)) {
-                results.add(currentWord);
-            }
-            return;
-        }
-
-        Set<Character> usedChars = new HashSet<>();
-        for (int i = 0; i < availableChars.size(); i++) {
-            char currentChar = availableChars.get(i);
-            if (usedChars.contains(currentChar)) {
-                continue;
-            }
-            usedChars.add(currentChar);
-
-            List<Character> newAvailableChars = new ArrayList<>(availableChars);
-            newAvailableChars.remove(i);
-            generateWordsHelper(currentWord + currentChar, newAvailableChars, length, results);
-        }
-    }
-
-    private static boolean isEnglishWord(String word) {
-        if (englishWords == null) {
-            englishWords = loadDictionary();
-        }
-        return englishWords.contains(word.toLowerCase());
     }
 
     @Override
@@ -129,11 +53,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     result += word;
                     result += "\n";
                 }
-
             }
         }
         result_text_view.setText(result);
     }
-
-
 }
