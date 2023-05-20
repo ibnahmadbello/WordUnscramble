@@ -117,22 +117,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View view) {
+        String result = "";
         if (view.getId() == R.id.unscramble_word_button) {
             //TODO: Solve the puzzle
             if (scrambled_word_edit_text.length() == 0) {
                 scrambled_word_edit_text.setError("Please enter a scrambled word.");
             } else {
-                result_text_view.setText("");
                 String scrambled_word = scrambled_word_edit_text.getText().toString();
                 ArrayList<String> words = generateWords(scrambled_word);
                 for (String word: words) {
-                    result_text_view.append(word+"\n");
+                    result += word;
+                    result += "\n";
                 }
 
             }
-
-
         }
+        result_text_view.setText(result);
     }
 
 
