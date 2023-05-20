@@ -17,7 +17,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.SecureRandom;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 // Our shuffle will be the implementation of Fisher-YAtes-Shuffle
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
@@ -61,22 +63,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void loadDictionary(){
+    private Set<String> loadDictionary(){
+        Set<String> words = new HashSet<>();
+
 
         try {
-            /*InputStream inputStream = assetManager.open("dictionary.txt");
-            int size = inputStream.available();
-            byte[] buffer = new byte[size];
-            inputStream.read(buffer);
-            inputStream.close();
-
-            text = new String(buffer);
-            // TextView.setText(text);*/
-            reader = new BufferedReader(new InputStreamReader(assetManager.open("dictionary.txt")));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(assetManager.open("dictionary.txt")));
             String newLine = reader.readLine();
             while (newLine != null){
-                dictionaryMap.put(newLine, NO_COUNT);
-                newLine = reader.readLine();
+//                dictionaryMap.put(newLine, NO_COUNT);
+//                newLine = reader.readLine();
+                words.add(newLine.toLowerCase());
             }
 
             // return stringBuilder.toString();
@@ -92,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         }
+        return words;
     }
 
     @Override
