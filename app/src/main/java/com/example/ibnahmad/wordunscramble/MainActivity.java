@@ -16,13 +16,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 // Our shuffle will be the implementation of Fisher-YAtes-Shuffle
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     public static final int NO_COUNT = 0;
@@ -34,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private SecureRandom random;
     private Map<String, Integer> dictionaryMap;
     private StringBuilder result;
+    private Set<String> englishWords;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,28 +52,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         result_button = findViewById(R.id.unscramble_word_button);
         result_button.setOnClickListener(this);
         result = new StringBuilder();
-
         loadDictionary();
-
-
     }
 
-    private static int calculateFactorial(int length){
-        if (length <= 1){
-            return 1;
-        } else {
-            return length * calculateFactorial(length -1);
-        }
-    }
-
-    private Set<String> loadDictionary(){
+    private Set<String> loadDictionary() {
         Set<String> words = new HashSet<>();
-
-
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(assetManager.open("dictionary.txt")));
             String newLine = reader.readLine();
-            while (newLine != null){
+            while (newLine != null) {
 //                dictionaryMap.put(newLine, NO_COUNT);
 //                newLine = reader.readLine();
                 words.add(newLine.toLowerCase());
@@ -80,10 +70,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            if (reader != null){
+            if (reader != null) {
                 try {
                     reader.close();
-                } catch (IOException e){
+                } catch (IOException e) {
                     //TODO: Log the Error
                     Log.d(TAG, "Error in closing the InputReaderStream");
                 }
@@ -92,114 +82,57 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return words;
     }
 
+    public ArrayList<String> generateWords(String word) {
+        ArrayList<String> results = new ArrayList<>();
+        generateWordsHelper("", word, results);
+        return results;
+    }
+
+    private void generateWordsHelper(String prefix, String remaining, List<String> results) {
+        int length = remaining.length();
+
+        // Base case: all characters used, add the generated word to results if it is an English word
+        if (length == 0) {
+            if (isEnglishWord(prefix)) {
+                results.add(prefix);
+            }
+            return;
+        }
+
+        // Recursively generate words by selecting each character as the next prefix
+        for (int i = 0; i < length; i++) {
+            String newPrefix = prefix + remaining.charAt(i);
+            String newRemaining = remaining.substring(0, i) + remaining.substring(i + 1);
+            generateWordsHelper(newPrefix, newRemaining, results);
+        }
+    }
+
+    private boolean isEnglishWord(String word) {
+        if (englishWords == null) {
+            englishWords = loadDictionary();
+        }
+        return englishWords.contains(word.toLowerCase());
+    }
+
     @Override
     public void onClick(View view) {
-        if (view.getId() == R.id.unscramble_word_button){
+        if (view.getId() == R.id.unscramble_word_button) {
             //TODO: Solve the puzzle
-            if (scrambled_word_edit_text.length() == 0){
+            if (scrambled_word_edit_text.length() == 0) {
                 scrambled_word_edit_text.setError("Please enter a scrambled word.");
             } else {
-                result_text_view.setText(null);
+                result_text_view.setText("");
                 String scrambled_word = scrambled_word_edit_text.getText().toString();
-                int scrambled_word_length = scrambled_word.length();
-                for (int i = 0; i < calculateFactorial(scrambled_word_length); i++){
-                    String solved_word = shuffle(random, scrambled_word);
-                    String three_solved_word = threeShuffle(random, scrambled_word);
-                    if (dictionaryMap.containsKey(solved_word.toUpperCase())){
-                        result.append(solved_word).append("\n");
-                    }
-                    if (dictionaryMap.containsKey(three_solved_word.toUpperCase())){
-                        result.append(three_solved_word).append("\n");
-                    }
+                ArrayList<String> words = generateWords(scrambled_word);
+                for (String word: words) {
+                    result_text_view.append(word+"\n");
                 }
 
-                result_text_view.setText(result);
-                result = new StringBuilder();
             }
 
 
         }
     }
 
-    private static String shuffle(SecureRandom secureRandom, String inputString){
-
-        // Convert your string into simple char array
-        char a[] = inputString.toCharArray();
-
-        // Scramble the letters using the standard Fisher-Yates shuffle
-        for (int i = 0; i < a.length; i++){
-//        for (int i = a.length; i > 0; i--) { // Was done using reverse mechanism to improve performance
-
-            int j = secureRandom.nextInt(a.length);
-
-            // swap letters
-            char temp = a[i];
-            a[i] = a[j];
-            a[j] = temp;
-        }
-
-        return new String(a);
-    }
-
-
-    private static String threeShuffle(SecureRandom secureRandom, String inputString){
-
-        // Convert your string into simple char array
-        char a[] = inputString.toCharArray();
-
-        // Scramble the letters using the standard Fisher-Yates shuffle
-        for (int i = 0; i < 3; i++){
-//        for (int i = a.length; i > 0; i--) { // Was done using reverse mechanism to improve performance
-
-            int j = secureRandom.nextInt(a.length);
-
-            // swap letters
-            char temp = a[i];
-            a[i] = a[j];
-            a[j] = temp;
-        }
-
-        return new String(a);
-    }
-
-    private static String fourShuffle(SecureRandom secureRandom, String inputString){
-
-        // Convert your string into simple char array
-        char a[] = inputString.toCharArray();
-
-        // Scramble the letters using the standard Fisher-Yates shuffle
-        for (int i = 0; i < a.length; i++){
-//        for (int i = a.length; i > 0; i--) { // Was done using reverse mechanism to improve performance
-
-            int j = secureRandom.nextInt(a.length);
-
-            // swap letters
-            char temp = a[i];
-            a[i] = a[j];
-            a[j] = temp;
-        }
-
-        return new String(a);
-    }
-
-    private static String fiveShuffle(SecureRandom secureRandom, String inputString){
-
-        // Convert your string into simple char array
-        char a[] = inputString.toCharArray();
-
-        // Scramble the letters using the standard Fisher-Yates shuffle
-        for (int i = 0; i < a.length; i++){
-//        for (int i = a.length; i > 0; i--) { // Was done using reverse mechanism to improve performance
-
-            int j = secureRandom.nextInt(a.length);
-
-            // swap letters
-            char temp = a[i];
-            a[i] = a[j];
-            a[j] = temp;
-        }
-
-        return new String(a);
-    }
 
 }
