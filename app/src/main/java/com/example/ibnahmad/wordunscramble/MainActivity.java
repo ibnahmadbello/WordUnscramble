@@ -1,10 +1,8 @@
 package com.example.ibnahmad.wordunscramble;
 
-import android.content.Context;
 import android.content.res.AssetManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -13,56 +11,43 @@ import android.widget.TextView;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-// Our shuffle will be the implementation of Fisher-YAtes-Shuffle
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    public static final int NO_COUNT = 0;
     private EditText scrambled_word_edit_text;
     private Button result_button;
     private TextView result_text_view;
-    AssetManager assetManager;
-    private BufferedReader reader;
-    private SecureRandom random;
-    private Map<String, Integer> dictionaryMap;
-    private StringBuilder result;
-    private Set<String> englishWords;
+    static AssetManager assetManager;
+    private static Set<String> englishWords;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        random = new SecureRandom();
         assetManager = this.getAssets();
-        dictionaryMap = new HashMap<>();
         scrambled_word_edit_text = findViewById(R.id.scrambled_word_edit_text);
 
         result_text_view = findViewById(R.id.result_text_view);
         result_button = findViewById(R.id.unscramble_word_button);
         result_button.setOnClickListener(this);
-        result = new StringBuilder();
-        loadDictionary();
+//        loadDictionary();
     }
 
-    private Set<String> loadDictionary() {
+    private static Set<String> loadDictionary() {
         Set<String> words = new HashSet<>();
+        BufferedReader reader = null;
         try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(assetManager.open("dictionary.txt")));
+            reader = new BufferedReader(new InputStreamReader(assetManager.open("dictionary.txt")));
             String newLine = reader.readLine();
             while (newLine != null) {
-//                dictionaryMap.put(newLine, NO_COUNT);
-//                newLine = reader.readLine();
                 words.add(newLine.toLowerCase());
             }
 
@@ -82,32 +67,48 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return words;
     }
 
-    public ArrayList<String> generateWords(String word) {
+    public static ArrayList<String> generateWords(String word) {
         ArrayList<String> results = new ArrayList<>();
-        generateWordsHelper("", word, results);
+        for (int i = 1; i <= word.length(); i++) {
+            List<String> partialResults = generatePartialWords(word, i);
+            results.addAll(partialResults);
+        }
         return results;
     }
 
-    private void generateWordsHelper(String prefix, String remaining, List<String> results) {
-        int length = remaining.length();
+    private static ArrayList<String> generatePartialWords(String word, int length) {
+        ArrayList<String> partialResults = new ArrayList<>();
+        ArrayList<Character> availableChars = new ArrayList<>();
+        for (char c : word.toCharArray()) {
+            availableChars.add(c);
+        }
+        generateWordsHelper("", availableChars, length, partialResults);
+        return partialResults;
+    }
 
-        // Base case: all characters used, add the generated word to results if it is an English word
-        if (length == 0) {
-            if (isEnglishWord(prefix)) {
-                results.add(prefix);
+    private static void generateWordsHelper(String currentWord, List<Character> availableChars, int length, List<String> results) {
+        if (currentWord.length() == length) {
+            if (isEnglishWord(currentWord)) {
+                results.add(currentWord);
             }
             return;
         }
 
-        // Recursively generate words by selecting each character as the next prefix
-        for (int i = 0; i < length; i++) {
-            String newPrefix = prefix + remaining.charAt(i);
-            String newRemaining = remaining.substring(0, i) + remaining.substring(i + 1);
-            generateWordsHelper(newPrefix, newRemaining, results);
+        Set<Character> usedChars = new HashSet<>();
+        for (int i = 0; i < availableChars.size(); i++) {
+            char currentChar = availableChars.get(i);
+            if (usedChars.contains(currentChar)) {
+                continue;
+            }
+            usedChars.add(currentChar);
+
+            List<Character> newAvailableChars = new ArrayList<>(availableChars);
+            newAvailableChars.remove(i);
+            generateWordsHelper(currentWord + currentChar, newAvailableChars, length, results);
         }
     }
 
-    private boolean isEnglishWord(String word) {
+    private static boolean isEnglishWord(String word) {
         if (englishWords == null) {
             englishWords = loadDictionary();
         }
